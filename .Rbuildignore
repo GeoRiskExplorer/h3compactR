@@ -1,0 +1,6 @@
+^README\.Rmd$
+^LICENSE\.md$
+^00_setup_package_workspace\.R$
+^dev$
+^analysis$
+^docs$
