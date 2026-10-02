@@ -7,7 +7,6 @@ Description: What the package does (one paragraph).
 License: Apache License (>= 2)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 8.0.0
 Suggests: 
     covr,
     ggplot2,
@@ -26,3 +25,6 @@ Imports:
     sf,
     tibble,
     vctrs
+URL: https://github.com/GeoRiskExplorer/h3compactR
+BugReports: https://github.com/GeoRiskExplorer/h3compactR/issues
+Config/roxygen2/version: 8.1.0
