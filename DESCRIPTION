@@ -1,30 +1,28 @@
 Package: h3compactR
-Title: What the Package Does (One Line, Title Case)
+Title: Polygon Coverage, Compaction and Aggregation for H3 Spatial Data
 Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: Apache License (>= 2)
+Authors@R: person("Rob", "Andronaco",
+    email = "robertandronaco@gmail.com",
+    role = c("aut", "cre"))
+Description:
+    Provides a compact workflow for representing polygons with H3 cells,
+    compacting those cells using established H3 methods, maintaining
+    relationships between source and compacted cells, aggregating attributes,
+    and validating the resulting spatial representation. The package builds
+    on the H3 ecosystem and the h3jsr package, with a focus on reproducible
+    spatial analysis and cartographic workflows.
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-Suggests: 
-    covr,
-    ggplot2,
-    knitr,
-    mapview,
-    pkgdown,
-    rmarkdown,
-    testthat (>= 3.0.0),
-    withr
-Config/testthat/edition: 3
-Imports: 
+Depends:
+    R (>= 4.2.0),
+    sf
+Imports:
     cli,
-    dplyr,
     h3jsr,
-    rlang,
-    sf,
-    tibble,
-    vctrs
-URL: https://github.com/GeoRiskExplorer/h3compactR
-BugReports: https://github.com/GeoRiskExplorer/h3compactR/issues
+    tibble
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
 Config/roxygen2/version: 8.1.0
+LazyData: true

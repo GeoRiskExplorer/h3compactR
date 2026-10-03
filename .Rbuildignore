@@ -1,6 +1,5 @@
-^README\.Rmd$
+^h3compactR\.Rproj$
+^\.Rproj\.user$
 ^LICENSE\.md$
-^00_setup_package_workspace\.R$
+^data-raw$
 ^dev$
-^analysis$
-^docs$
