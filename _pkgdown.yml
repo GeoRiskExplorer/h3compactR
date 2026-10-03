@@ -1,0 +1,74 @@
+url: https://georiskexplorer.github.io/h3compactR/
+
+template:
+  bootstrap: 5
+
+home:
+  title: h3compactR
+  description: >
+    Reproducible polygon coverage, H3 compaction, attribute aggregation,
+    provenance, quality assurance and cartographic representation.
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, github]
+
+reference:
+  - title: Polygon coverage
+    desc: >
+      Create and expand authoritative single-resolution H3 representations.
+    contents:
+      - h3_cover_polygon
+      - expand_h3
+
+  - title: Compaction and relationships
+    desc: >
+      Compact H3 representations and retain explicit relationships
+      with their source cells.
+    contents:
+      - compact_h3
+      - h3_compaction_lookup
+
+  - title: Attribute aggregation
+    desc: >
+      Transfer additive measures and categorical provenance from
+      authoritative source cells to compact owners.
+    contents:
+      - aggregate_h3
+
+  - title: Polygon relationships
+    desc: >
+      Relate H3 cells to polygon features and establish exclusive
+      polygon ownership where required.
+    contents:
+      - h3_polygon_membership
+      - h3_assign_polygon
+
+  - title: Quality assurance and cartography
+    desc: >
+      Validate compact representations and visually inspect H3 geography.
+    contents:
+      - qa_h3_compaction
+      - plot_h3
+
+  - title: Example data
+    contents:
+      - toy_polygons
+      - toy_membership_polygons
+
+articles:
+  - title: Workflows
+    navbar: ~
+    contents:
+      - h3compactR-workflow
+
+footer:
+  structure:
+    left: developed_by
+    right: built_with
+
+authors:
+  Rob Andronaco:
+    href: https://www.georiskanalysis.com
+
