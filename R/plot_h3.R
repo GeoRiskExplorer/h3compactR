@@ -32,6 +32,10 @@
 #'   ]
 #' )
 #'
+#' @references
+#' H3 cell geometry access is provided through O'Brien's `h3jsr` package
+#' (\doi{10.32614/CRAN.package.h3jsr}); spatial geometry uses `sf`.
+#'
 #' @export
 plot_h3 <- function(x, context = NULL, ...) {
 

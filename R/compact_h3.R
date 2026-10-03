@@ -36,6 +36,11 @@
 #'
 #' @return A character vector containing unique compacted H3 cell indexes.
 #'
+#' @references
+#' H3 hierarchical indexing and compaction: <https://h3geo.org/docs/highlights/indexing/>.
+#' R access is provided through O'Brien's `h3jsr` package
+#' (\doi{10.32614/CRAN.package.h3jsr}).
+#'
 #' @export
 compact_h3 <- function(
   x,

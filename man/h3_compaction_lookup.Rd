@@ -50,3 +50,8 @@ source cell cannot be assigned to a compacted cell, if more than one
 compacted cell could own the same source cell, or if the compacted
 representation contains cells finer than the source resolution.
 }
+\references{
+H3 hierarchy and logical containment: \url{https://h3geo.org/docs/highlights/indexing/}.
+R access is provided through O'Brien's \code{h3jsr} package
+(\doi{10.32614/CRAN.package.h3jsr}).
+}

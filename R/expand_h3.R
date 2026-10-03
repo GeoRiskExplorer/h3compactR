@@ -26,6 +26,11 @@
 #'
 #' @return A character vector containing unique H3 cell indexes.
 #'
+#' @references
+#' H3 grid hierarchy and neighbourhood operations: <https://h3geo.org/>.
+#' R access is provided through O'Brien's `h3jsr` package
+#' (\doi{10.32614/CRAN.package.h3jsr}).
+#'
 #' @export
 expand_h3 <- function(
   x,

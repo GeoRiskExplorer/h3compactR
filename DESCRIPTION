@@ -11,6 +11,8 @@ Description:
     and validating the resulting spatial representation. The package builds
     on the H3 ecosystem and the h3jsr package, with a focus on reproducible
     spatial analysis and cartographic workflows.
+URL: https://github.com/GeoRiskExplorer/h3compactR
+BugReports: https://github.com/GeoRiskExplorer/h3compactR/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

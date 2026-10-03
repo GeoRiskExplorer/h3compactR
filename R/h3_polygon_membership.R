@@ -19,6 +19,10 @@
 #' exclusive ownership, allocate polygon values, aggregate attributes, or
 #' alter H3 geometry.
 #'
+#' @references
+#' Spatial vector and geometric operations use `sf`; see Pebesma E (2018),
+#' \doi{10.32614/RJ-2018-009}. H3 geometry access is provided through `h3jsr`.
+#'
 #' @export
 h3_polygon_membership <- function(x, polygons, id) {
 

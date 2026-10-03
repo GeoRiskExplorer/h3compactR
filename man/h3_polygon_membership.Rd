@@ -30,3 +30,7 @@ This function records spatial relationships only. It does not assign
 exclusive ownership, allocate polygon values, aggregate attributes, or
 alter H3 geometry.
 }
+\references{
+Spatial vector and geometric operations use \code{sf}; see Pebesma E (2018),
+\doi{10.32614/RJ-2018-009}. H3 geometry access is provided through \code{h3jsr}.
+}

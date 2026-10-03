@@ -36,3 +36,8 @@ Expansion does not test whether newly included cells intersect an original
 polygon or other source geometry. It is a purely H3-based neighbourhood
 operation.
 }
+\references{
+H3 grid hierarchy and neighbourhood operations: \url{https://h3geo.org/}.
+R access is provided through O'Brien's \code{h3jsr} package
+(\doi{10.32614/CRAN.package.h3jsr}).
+}

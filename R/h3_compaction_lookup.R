@@ -40,6 +40,11 @@
 #'   \item{relationship}{Either `"exact"` or `"ancestor"`.}
 #' }
 #'
+#' @references
+#' H3 hierarchy and logical containment: <https://h3geo.org/docs/highlights/indexing/>.
+#' R access is provided through O'Brien's `h3jsr` package
+#' (\doi{10.32614/CRAN.package.h3jsr}).
+#'
 #' @export
 h3_compaction_lookup <- function(
   source,

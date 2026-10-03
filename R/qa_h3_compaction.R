@@ -40,6 +40,10 @@
 #'   resolution and relationship.}
 #' }
 #'
+#' @references
+#' H3 hierarchy, compaction and uncompaction:
+#' <https://h3geo.org/docs/highlights/indexing/>.
+#'
 #' @export
 qa_h3_compaction <- function(
   source,

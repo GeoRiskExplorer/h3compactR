@@ -46,3 +46,8 @@ Input is restricted to a single source resolution so that the authoritative
 analytical support is explicit. Mixed-resolution H3 is an output of
 compaction rather than an accepted source representation.
 }
+\references{
+H3 hierarchical indexing and compaction: \url{https://h3geo.org/docs/highlights/indexing/}.
+R access is provided through O'Brien's \code{h3jsr} package
+(\doi{10.32614/CRAN.package.h3jsr}).
+}

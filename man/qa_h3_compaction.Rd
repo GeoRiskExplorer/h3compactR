@@ -52,3 +52,7 @@ The audit reports:
 \item ownership integrity.
 }
 }
+\references{
+H3 hierarchy, compaction and uncompaction:
+\url{https://h3geo.org/docs/highlights/indexing/}.
+}

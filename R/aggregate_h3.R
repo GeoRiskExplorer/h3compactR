@@ -48,6 +48,11 @@
 #'   fields, requested collapsed attributes, and a `<field>_n` provenance count
 #'   for every collapsed attribute.
 #'
+#' @references
+#' The source-to-owner hierarchy follows H3 logical containment; see
+#' <https://h3geo.org/docs/highlights/indexing/>. H3 operations are accessed
+#' through O'Brien's `h3jsr` package (\doi{10.32614/CRAN.package.h3jsr}).
+#'
 #' @export
 aggregate_h3 <- function(
   data,

@@ -57,6 +57,11 @@
 #' @return A character vector containing unique H3 cell indexes. If no cells
 #'   satisfy the requested coverage rule, `character(0)` is returned.
 #'
+#' @references
+#' H3 indexing: <https://h3geo.org/>. R access is provided through O'Brien's
+#' `h3jsr` package (\doi{10.32614/CRAN.package.h3jsr}). Spatial geometry
+#' operations use `sf`; see Pebesma (2018), \doi{10.32614/RJ-2018-009}.
+#'
 #' @export
 h3_cover_polygon <- function(
   x,

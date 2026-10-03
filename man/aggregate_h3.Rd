@@ -2,28 +2,37 @@
 % Please edit documentation in R/aggregate_h3.R
 \name{aggregate_h3}
 \alias{aggregate_h3}
-\title{Aggregate additive attributes to compacted H3 cells}
+\title{Aggregate attributes to compacted H3 cells}
 \usage{
-aggregate_h3(data, lookup, sum, h3_col = "h3")
+aggregate_h3(data, lookup, sum = NULL, collapse = NULL, h3_col = "h3")
 }
 \arguments{
 \item{data}{A data frame containing one row per authoritative source H3 cell.}
 
 \item{lookup}{A lookup produced by \code{\link[=h3_compaction_lookup]{h3_compaction_lookup()}}.}
 
-\item{sum}{Character vector naming additive numeric fields to aggregate.}
+\item{sum}{Optional character vector naming additive numeric fields to
+aggregate by summation.}
 
-\item{h3_col}{Name of the H3 index column in \code{data}. Defaults to
-\code{"h3"}.}
+\item{collapse}{Optional character vector naming source attributes whose
+unique non-missing values should be retained for each compacted H3 owner.
+Multiple unique values are returned as a deterministic semicolon-separated
+character string. For each collapsed field, a companion \verb{<field>_n} column
+reports the number of unique non-missing source values represented by each
+compacted H3 owner.}
+
+\item{h3_col}{Name of the H3 index column in \code{data}. Defaults to \code{"h3"}.}
 }
 \value{
 A tibble containing one row per compacted H3 owner, with
-\code{compact_h3}, \code{compact_resolution}, \code{source_cell_n}, and the requested
-aggregated fields.
+\code{compact_h3}, \code{compact_resolution}, \code{source_cell_n}, requested additive
+fields, requested collapsed attributes, and a \verb{<field>_n} provenance count
+for every collapsed attribute.
 }
 \description{
-Aggregates explicitly selected additive attributes from authoritative source
-H3 cells to their compacted H3 owners using an H3 compaction lookup.
+Aggregates explicitly selected additive attributes and collapses explicitly
+selected categorical attributes from authoritative source H3 cells to their
+compacted H3 owners using an H3 compaction lookup.
 }
 \details{
 \code{aggregate_h3()} treats the source H3 grid as the authoritative analytical
@@ -31,17 +40,29 @@ support. Values are transferred to compacted H3 cells through the explicit
 source-to-owner relationship in \code{lookup}; compacted polygon geometry is not
 used for attribute assignment.
 
-Only fields explicitly supplied to \code{sum} are aggregated. The function does
-not infer aggregation rules from field names or data types.
+Fields supplied to \code{sum} and \code{collapse} are handled differently and must be
+selected explicitly. The function does not infer aggregation rules from
+field names or data types.
 
-Missing values are rejected. They are not silently converted to zero or
-removed during aggregation.
+\code{sum} is intended for additive numeric quantities. Missing additive values
+are rejected and additive totals are checked for conservation.
+
+\code{collapse} is intended for categorical identifiers or descriptive source
+attributes. Duplicate values within a compact owner are removed before
+values are collapsed. Missing values are ignored when non-missing values are
+present. If all source values for a compact owner are missing, the compact
+value is \code{NA_character_}.
+
+Collapsed values are a compact representation of source-cell provenance.
+They do not create a new analytical category and do not replace the
+authoritative source-to-compact relationship in \code{lookup}.
 
 Derived measures such as rates, proportions, ratios, relative risks, or
 averages should generally be recalculated from their aggregated components
 after aggregation rather than aggregated directly.
-
-For every requested additive field, the total across source cells is checked
-against the total across compacted cells. Aggregation fails if conservation
-is not satisfied within numerical tolerance.
+}
+\references{
+The source-to-owner hierarchy follows H3 logical containment; see
+\url{https://h3geo.org/docs/highlights/indexing/}. H3 operations are accessed
+through O'Brien's \code{h3jsr} package (\doi{10.32614/CRAN.package.h3jsr}).
 }

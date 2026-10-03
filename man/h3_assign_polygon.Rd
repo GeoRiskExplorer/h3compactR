@@ -61,3 +61,7 @@ interior overlap.
 nearest ownership is genuinely ambiguous. It does not impose an arbitrary
 maximum search distance.
 }
+\references{
+Spatial vector and geometric operations use \code{sf}; see Pebesma E (2018),
+\doi{10.32614/RJ-2018-009}. H3 geometry access is provided through \code{h3jsr}.
+}

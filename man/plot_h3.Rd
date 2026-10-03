@@ -44,3 +44,7 @@ plot_h3(
 )
 
 }
+\references{
+H3 cell geometry access is provided through O'Brien's \code{h3jsr} package
+(\doi{10.32614/CRAN.package.h3jsr}); spatial geometry uses \code{sf}.
+}
