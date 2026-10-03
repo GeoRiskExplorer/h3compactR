@@ -46,6 +46,12 @@ Input is restricted to a single source resolution so that the authoritative
 analytical support is explicit. Mixed-resolution H3 is an output of
 compaction rather than an accepted source representation.
 }
+\examples{
+source <- h3_cover_polygon(toy_polygons[3, ], resolution = 8)
+compacted <- compact_h3(source, min_resolution = 7)
+c(source = length(source), compacted = length(compacted))
+
+}
 \references{
 H3 hierarchical indexing and compaction: \url{https://h3geo.org/docs/highlights/indexing/}.
 R access is provided through O'Brien's \code{h3jsr} package

@@ -22,19 +22,18 @@
 #' @keywords datasets
 "toy_polygons"
 
-#' Synthetic polygons for H3 membership and assignment testing
+
+#' Synthetic polygon geography for membership and assignment examples
 #'
-#' A deterministic `sf` dataset containing synthetic polygon geometries used
-#' in examples, tests, and demonstrations of H3 polygon membership and
-#' assignment workflows.
-#'
-#' The dataset includes adjacent polygons, a polygon containing an interior
-#' hole, a polygon occupying that hole, and a multipart polygon. The features
-#' are constructed without positive-area interior overlap.
+#' A deterministic `sf` dataset containing five synthetic polygon features
+#' designed to exercise polygon membership and exclusive H3 assignment. The
+#' geography includes adjacent polygons with a shared boundary, a polygon with
+#' an interior hole, a separate polygon occupying that hole, and a multipart
+#' polygon. Feature interiors do not overlap.
 #'
 #' @format An `sf` object with 5 rows and 2 columns:
 #' \describe{
-#'   \item{feature_id}{Character identifier for the synthetic polygon feature.}
+#'   \item{feature_id}{Character identifier for the synthetic feature.}
 #'   \item{geometry}{Polygon or multipolygon geometry in EPSG:4326.}
 #' }
 #'

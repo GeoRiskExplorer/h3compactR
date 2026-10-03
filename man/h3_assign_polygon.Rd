@@ -61,6 +61,16 @@ interior overlap.
 nearest ownership is genuinely ambiguous. It does not impose an arbitrary
 maximum search distance.
 }
+\examples{
+cells <- h3_cover_polygon(toy_membership_polygons, resolution = 7)
+assignment <- h3_assign_polygon(
+  cells,
+  toy_membership_polygons,
+  id = "feature_id"
+)
+head(assignment)
+
+}
 \references{
 Spatial vector and geometric operations use \code{sf}; see Pebesma E (2018),
 \doi{10.32614/RJ-2018-009}. H3 geometry access is provided through \code{h3jsr}.

@@ -1,8 +1,85 @@
 # h3compactR
 
-`h3compactR` provides a small, explicit workflow for polygon coverage, H3 compaction, source-to-compacted relationships, attribute aggregation, quality assurance and cartographic representation.
+`h3compactR` provides a reproducible workflow for representing polygon geography with H3, compacting H3 cells while retaining their relationship to the source grid, safely aggregating attributes, validating the result, and producing cartographic representations.
 
-The package **does not implement or claim a new H3 compaction algorithm**. It builds an application and QA layer around established H3 operations exposed to R through `h3jsr`.
+The package builds on established H3 operations available in R through `h3jsr`. It does not implement or claim a new H3 compaction algorithm; its focus is the analytical workflow around polygon coverage, H3 hierarchy, attribute aggregation, provenance, quality assurance, and cartographic representation.
+
+## Installation
+
+Install the development version from GitHub:
+
+```r
+# install.packages("remotes")
+remotes::install_github("GeoRiskExplorer/h3compactR")
+```
+
+Then load the package:
+
+```r
+library(h3compactR)
+```
+
+## Quick start
+
+The core workflow begins with an authoritative, single-resolution H3 representation of polygon geography.
+
+```r
+library(h3compactR)
+
+data(toy_polygons)
+
+source_h3 <- h3_cover_polygon(
+  toy_polygons,
+  resolution = 8,
+  boundary = "center"
+)
+
+length(source_h3)
+```
+
+Compact the source grid while preventing compaction below resolution 7:
+
+```r
+compact_h3_cells <- compact_h3(
+  source_h3,
+  min_resolution = 7
+)
+
+length(compact_h3_cells)
+```
+
+Create an explicit relationship between every source cell and its compact owner:
+
+```r
+lookup <- h3_compaction_lookup(
+  source = source_h3,
+  compacted = compact_h3_cells
+)
+
+head(lookup)
+```
+
+Validate that compaction preserves the authoritative source support:
+
+```r
+qa <- qa_h3_compaction(
+  source = source_h3,
+  compacted = compact_h3_cells
+)
+
+qa
+```
+
+And inspect the compact representation:
+
+```r
+plot_h3(
+  compact_h3_cells,
+  context = toy_polygons
+)
+```
+
+The compact cells may contain multiple H3 resolutions. The original single-resolution grid remains the authoritative analytical support; compaction changes its hierarchical representation rather than creating new observations.
 
 ## Core workflow
 
@@ -26,42 +103,135 @@ POLYGON
 
 `h3_polygon_membership()` and `h3_assign_polygon()` provide companion tools when H3 cells need to retain a documented relationship with source polygon features.
 
-## Analytical position
+## Polygon coverage
 
-The source, single-resolution H3 grid remains the **authoritative analytical support**. Compaction changes how that support is represented hierarchically; it does not create new observations or redistribute source values. Each source H3 cell should contribute its additive values exactly once to its compact owner. Derived rates and proportions should be recalculated from their component measures rather than averaged by default.
+`h3_cover_polygon()` provides four explicit polygon coverage rules:
 
-This distinction matters because H3 provides exact **logical** hierarchy while geographic containment between resolutions is approximate. Compact parent geometry should therefore not be interpreted as an exact polygonal union of descendant cells.
+- `"center"` uses standard H3 centre-based polygon coverage.
+- `"within"` retains cells fully contained by the polygon.
+- `"intersects"` retains cells with any geometric intersection with the polygon.
+- `"overlap"` retains cells meeting a user-specified minimum proportional overlap.
 
-## Attribution
+For `"overlap"`, proportional overlap is defined as:
 
-`h3compactR` depends on and is informed by substantial prior work:
+```text
+area(H3 cell intersection polygon) / area(H3 cell)
+```
 
-- **H3** provides the hierarchical geospatial indexing system and the underlying hierarchy, neighbourhood, compaction and uncompaction concepts used by this package. H3 is developed by Uber Technologies and released under the Apache 2.0 license.
-- **h3jsr**, developed by Lauren O'Brien, provides R access to H3 through `h3-js` and V8. `h3compactR` uses `h3jsr` rather than reimplementing H3.
-- **sf**, led by Edzer Pebesma and contributors, provides the simple-features representation and spatial geometry operations used throughout the package.
-- **Boscoe & Pickle (2003)** informs the broader cartographic framing that geographic-unit choice involves trade-offs among resolution, stability, area, familiarity, data availability and functional relevance. It is background to the package's cartographic thinking, not the source of H3 compaction or an algorithm implemented here.
+These rules answer different spatial questions and can produce different boundary representations. The choice should therefore be made according to analytical purpose rather than treated as an interchangeable implementation detail.
 
-See the package-level help (`?h3compactR`) for formal references.
+`expand_h3()` can optionally expand a single-resolution H3 set by one or more neighbourhood rings. Expansion is separate from polygon coverage so that the source coverage rule remains explicit.
+
+## Compaction and source relationships
+
+`compact_h3()` uses established H3 hierarchy and compaction operations to reduce the number of cells needed to represent a source H3 set.
+
+A `min_resolution` can be supplied to prevent compaction below a chosen H3 resolution. This allows the degree of hierarchical generalisation to be controlled without changing the source grid.
+
+`h3_compaction_lookup()` then records which compact cell owns each source cell. A source cell either remains an exact compact cell or is represented by one of its H3 ancestors.
+
+This lookup is important when compact geometry is used to represent analytical data: values remain associated with the source cells and can be transferred to compact owners explicitly rather than inferred from compact geometry.
+
+## Attribute aggregation and provenance
+
+`aggregate_h3()` aggregates source-cell attributes through a source-to-compact lookup.
+
+Aggregation rules are deliberately explicit:
+
+- `sum` is for additive numeric measures.
+- `collapse` is for categorical or provenance attributes.
+
+The package does not infer aggregation rules for arbitrary fields.
+
+For collapsed attributes, unique non-missing source values are represented deterministically and a companion `<field>_n` column records the number of unique source values represented by each compact owner.
+
+For example, a compact cell assembled from source cells associated with two polygon identifiers may retain both identifiers as provenance. That does not split or duplicate the compact cell's additive total.
+
+Derived measures such as rates, proportions, and percentages should generally be recalculated from their aggregated component measures rather than averaged across source cells.
+
+## Polygon relationships and assignment
+
+Two companion functions support relationships between H3 cells and polygon features.
+
+`h3_polygon_membership()` returns polygon relationships without forcing an exclusive owner. This is useful when the analytical requirement is to retain all relevant source-feature relationships.
+
+`h3_assign_polygon()` assigns one polygon owner to each H3 cell using explicit spatial rules. Depending on geometry, assignments may be established from the cell centre, a unique intersection, the largest unique overlap, or—when requested—the nearest polygon.
+
+These functions require valid polygon geography with non-overlapping polygon interiors. `h3compactR` does not silently repair, snap, dissolve, or otherwise modify invalid source geography.
+
+## Quality assurance and cartography
+
+`qa_h3_compaction()` checks whether a compact representation reconstructs the authoritative source H3 set and reports key properties of the result, including source and compact cell counts, resolution composition, ownership relationships, and reconstruction status.
+
+`plot_h3()` provides a lightweight visual check of H3 representations, including mixed-resolution compact outputs and optional polygon context.
+
+Visual inspection complements, rather than replaces, analytical QA. Compact parent cells can extend geographically beyond the exact footprint implied by their source descendants, so mixed-resolution geometry should be interpreted as a hierarchical representation.
+
+## Analytical principles
+
+### The source grid is authoritative
+
+The source, single-resolution H3 grid remains the **authoritative analytical support**.
+
+Compaction changes how that support is represented hierarchically. It does not create new observations, redistribute source values, or imply that every part of a compact parent polygon contributed data.
+
+Each authoritative source H3 cell should contribute its additive values exactly once to exactly one compact owner.
+
+### Logical hierarchy is not exact geographic containment
+
+H3 provides a hierarchical relationship between parent and child indexes, but geographic containment between H3 resolutions is not equivalent to an exact polygonal union of descendant cells.
+
+A compact parent should therefore be interpreted through its source-to-compact relationship, not as evidence that the entire parent geometry was part of the original analytical support.
+
+### Aggregation should follow the meaning of the variable
+
+Additive measures can be summed when moving from source cells to compact owners.
+
+Categorical identifiers and provenance fields can be retained as collapsed source information.
+
+Derived measures require their own analytical treatment and should normally be recalculated from appropriate component measures. `h3compactR` deliberately avoids guessing how arbitrary attributes should be aggregated.
 
 ## Scope and limitations
 
 - H3 indexing is based on geographic coordinates; polygon inputs are transformed as required for H3 operations.
 - Geometry- and area-based operations may require an appropriate projected CRS internally.
 - Mixed-resolution compact representations are hierarchical representations, not replacements for the authoritative source support.
-- Polygon membership and assignment require valid, non-overlapping polygon interiors. The package does not silently repair, snap, dissolve or otherwise alter invalid source geography.
-- Aggregation rules are explicit. Additive measures may be summed; categorical/provenance fields may be collapsed. The package does not guess how arbitrary attributes should be aggregated.
-- Computational cost depends strongly on H3 resolution, polygon complexity and operation. No universal safe maximum cell count is claimed.
+- Polygon membership and assignment require valid, non-overlapping polygon interiors.
+- The package does not silently repair, snap, dissolve, or otherwise alter invalid source geography.
+- Aggregation rules are explicit rather than inferred.
+- Computational cost depends strongly on H3 resolution, polygon complexity, geographic extent, and operation.
+- Standard centre-based coverage is substantially less computationally demanding than geometry-based coverage rules.
+- `within`, `intersects`, and `overlap` require additional geometry operations and can become computationally expensive for very large areas at fine H3 resolutions.
+- No universal safe maximum H3 cell count is claimed. Users working at very large scales should select resolution according to analytical purpose and test representative workloads.
 
-## Development status
+Performance optimisation for very large geometry-heavy workflows is an area for future package development. The current package prioritises explicit spatial behaviour, analytical traceability, and reproducible QA.
 
-The package is currently under development. Its analytical core is covered by an automated test suite, but public API and documentation should be treated as pre-release until a stable version is tagged.
+## Attribution
+
+`h3compactR` depends on and is informed by substantial prior work:
+
+- **H3** provides the hierarchical geospatial indexing system and the underlying hierarchy, neighbourhood, compaction, and uncompaction concepts used by this package. H3 is developed by Uber Technologies and released under the Apache 2.0 license.
+- **h3jsr**, developed by Lauren O'Brien, provides R access to H3 through `h3-js` and V8. `h3compactR` uses `h3jsr` rather than reimplementing H3.
+- **sf**, led by Edzer Pebesma and contributors, provides the simple-features representation and spatial geometry operations used throughout the package.
+- **Boscoe & Pickle (2003)** informs the broader cartographic framing that geographic-unit choice involves trade-offs among resolution, stability, area, familiarity, data availability, and functional relevance. It is background to the package's cartographic thinking, not the source of H3 compaction or an algorithm implemented here.
+
+See the package-level help (`?h3compactR`) and `REFERENCES.md` included with the installed package for further attribution and references.
 
 ## References
 
-Boscoe, F. P., & Pickle, L. W. (2003). Choosing geographic units for choropleth rate maps, with an emphasis on public health applications. *Cartography and Geographic Information Science*, 30(3), 237–248. https://doi.org/10.1559/152304003100011171
+Boscoe, F. P., & Pickle, L. W. (2003). Choosing geographic units for choropleth rate maps, with an emphasis on public health applications. *Cartography and Geographic Information Science*, 30(3), 237–248. DOI: 10.1559/152304003100011171.
 
-O'Brien, L. *h3jsr: Access Uber's H3 Library*. R package. https://doi.org/10.32614/CRAN.package.h3jsr
+O'Brien, L. *h3jsr: Access Uber's H3 Library*. R package. DOI: 10.32614/CRAN.package.h3jsr.
 
-Pebesma, E. (2018). Simple Features for R: Standardized Support for Spatial Vector Data. *The R Journal*, 10(1), 439–446. https://doi.org/10.32614/RJ-2018-009
+Pebesma, E. (2018). Simple Features for R: Standardized Support for Spatial Vector Data. *The R Journal*, 10(1), 439–446. DOI: 10.32614/RJ-2018-009.
 
-Uber Technologies, Inc. *H3: Hexagonal Hierarchical Geospatial Indexing System*. https://h3geo.org/
+Uber Technologies, Inc. *H3: Hexagonal Hierarchical Geospatial Indexing System*.
+
+## Author
+
+**Rob Andronaco, GDipRiskMgt, MA, MGeospatialSc — GeoRisk Analysis**
+
+Spatial analysis, geographic risk modelling, spatial decision support, and analytical cartography.
+
+**GeoRisk Analysis:** https://www.georiskanalysis.com
+**Contact:** enquire@georiskanalysis.com

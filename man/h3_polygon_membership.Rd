@@ -30,6 +30,16 @@ This function records spatial relationships only. It does not assign
 exclusive ownership, allocate polygon values, aggregate attributes, or
 alter H3 geometry.
 }
+\examples{
+cells <- h3_cover_polygon(toy_membership_polygons, resolution = 7)
+membership <- h3_polygon_membership(
+  cells,
+  toy_membership_polygons,
+  id = "feature_id"
+)
+head(membership)
+
+}
 \references{
 Spatial vector and geometric operations use \code{sf}; see Pebesma E (2018),
 \doi{10.32614/RJ-2018-009}. H3 geometry access is provided through \code{h3jsr}.

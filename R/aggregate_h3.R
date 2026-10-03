@@ -48,6 +48,25 @@
 #'   fields, requested collapsed attributes, and a `<field>_n` provenance count
 #'   for every collapsed attribute.
 #'
+#' @examples
+#' source <- h3_cover_polygon(toy_polygons[3, ], resolution = 8)
+#' compacted <- compact_h3(source, min_resolution = 7)
+#' lookup <- h3_compaction_lookup(source, compacted)
+#'
+#' source_data <- data.frame(
+#'   h3 = source,
+#'   count = rep(1, length(source)),
+#'   source_id = rep("example", length(source))
+#' )
+#'
+#' aggregated <- aggregate_h3(
+#'   source_data,
+#'   lookup,
+#'   sum = "count",
+#'   collapse = "source_id"
+#' )
+#' head(aggregated)
+#'
 #' @references
 #' The source-to-owner hierarchy follows H3 logical containment; see
 #' <https://h3geo.org/docs/highlights/indexing/>. H3 operations are accessed

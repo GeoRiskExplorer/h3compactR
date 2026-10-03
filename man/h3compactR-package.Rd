@@ -86,17 +86,18 @@ Geographic Information Science}, 30(3), 237-248.
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://www.georiskanalysis.com}
   \item \url{https://github.com/GeoRiskExplorer/h3compactR}
   \item Report bugs at \url{https://github.com/GeoRiskExplorer/h3compactR/issues}
 }
 
 }
 \author{
-\strong{Maintainer}: Rob Andronaco \email{robertandronaco@gmail.com}
+\strong{Maintainer}: Rob Andronaco \email{enquire@georiskanalysis.com} (GDipRiskMgt: Graduate Diploma in Risk Management, MA: Master of Arts (Sports and Recreation Project Management), MGeospatialSc: Master of Geospatial Science)
 
 Authors:
 \itemize{
-  \item Rob Andronaco \email{robertandronaco@gmail.com}
+  \item Rob Andronaco \email{enquire@georiskanalysis.com} (GDipRiskMgt: Graduate Diploma in Risk Management, MA: Master of Arts (Sports and Recreation Project Management), MGeospatialSc: Master of Geospatial Science)
 }
 
 }

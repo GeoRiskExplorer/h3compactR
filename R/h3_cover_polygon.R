@@ -57,6 +57,17 @@
 #' @return A character vector containing unique H3 cell indexes. If no cells
 #'   satisfy the requested coverage rule, `character(0)` is returned.
 #'
+#' @examples
+#' cells <- h3_cover_polygon(toy_polygons[1, ], resolution = 7)
+#' length(cells)
+#'
+#' intersecting <- h3_cover_polygon(
+#'   toy_polygons[1, ],
+#'   resolution = 7,
+#'   boundary = "intersects"
+#' )
+#' length(intersecting)
+#'
 #' @references
 #' H3 indexing: <https://h3geo.org/>. R access is provided through O'Brien's
 #' `h3jsr` package (\doi{10.32614/CRAN.package.h3jsr}). Spatial geometry

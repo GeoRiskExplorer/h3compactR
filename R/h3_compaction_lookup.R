@@ -40,6 +40,12 @@
 #'   \item{relationship}{Either `"exact"` or `"ancestor"`.}
 #' }
 #'
+#' @examples
+#' source <- h3_cover_polygon(toy_polygons[3, ], resolution = 8)
+#' compacted <- compact_h3(source, min_resolution = 7)
+#' lookup <- h3_compaction_lookup(source, compacted)
+#' head(lookup)
+#'
 #' @references
 #' H3 hierarchy and logical containment: <https://h3geo.org/docs/highlights/indexing/>.
 #' R access is provided through O'Brien's `h3jsr` package

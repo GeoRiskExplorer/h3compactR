@@ -26,6 +26,11 @@
 #'
 #' @return A character vector containing unique H3 cell indexes.
 #'
+#' @examples
+#' cells <- h3_cover_polygon(toy_polygons[1, ], resolution = 7)
+#' expanded <- expand_h3(cells, rings = 1)
+#' c(source = length(cells), expanded = length(expanded))
+#'
 #' @references
 #' H3 grid hierarchy and neighbourhood operations: <https://h3geo.org/>.
 #' R access is provided through O'Brien's `h3jsr` package

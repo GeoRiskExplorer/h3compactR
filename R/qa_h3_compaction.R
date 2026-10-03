@@ -40,6 +40,12 @@
 #'   resolution and relationship.}
 #' }
 #'
+#' @examples
+#' source <- h3_cover_polygon(toy_polygons[3, ], resolution = 8)
+#' compacted <- compact_h3(source, min_resolution = 7)
+#' qa <- qa_h3_compaction(source, compacted)
+#' qa$summary
+#'
 #' @references
 #' H3 hierarchy, compaction and uncompaction:
 #' <https://h3geo.org/docs/highlights/indexing/>.

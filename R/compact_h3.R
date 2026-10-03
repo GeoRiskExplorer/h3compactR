@@ -36,6 +36,11 @@
 #'
 #' @return A character vector containing unique compacted H3 cell indexes.
 #'
+#' @examples
+#' source <- h3_cover_polygon(toy_polygons[3, ], resolution = 8)
+#' compacted <- compact_h3(source, min_resolution = 7)
+#' c(source = length(source), compacted = length(compacted))
+#'
 #' @references
 #' H3 hierarchical indexing and compaction: <https://h3geo.org/docs/highlights/indexing/>.
 #' R access is provided through O'Brien's `h3jsr` package

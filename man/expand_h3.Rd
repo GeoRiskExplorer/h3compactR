@@ -36,6 +36,12 @@ Expansion does not test whether newly included cells intersect an original
 polygon or other source geometry. It is a purely H3-based neighbourhood
 operation.
 }
+\examples{
+cells <- h3_cover_polygon(toy_polygons[1, ], resolution = 7)
+expanded <- expand_h3(cells, rings = 1)
+c(source = length(cells), expanded = length(expanded))
+
+}
 \references{
 H3 grid hierarchy and neighbourhood operations: \url{https://h3geo.org/}.
 R access is provided through O'Brien's \code{h3jsr} package

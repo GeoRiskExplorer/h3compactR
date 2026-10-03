@@ -70,6 +70,18 @@ Large polygons at fine H3 resolutions can generate millions of cells and
 may require substantial memory. The function does not impose an arbitrary
 maximum polygon size or H3 resolution.
 }
+\examples{
+cells <- h3_cover_polygon(toy_polygons[1, ], resolution = 7)
+length(cells)
+
+intersecting <- h3_cover_polygon(
+  toy_polygons[1, ],
+  resolution = 7,
+  boundary = "intersects"
+)
+length(intersecting)
+
+}
 \references{
 H3 indexing: \url{https://h3geo.org/}. R access is provided through O'Brien's
 \code{h3jsr} package (\doi{10.32614/CRAN.package.h3jsr}). Spatial geometry

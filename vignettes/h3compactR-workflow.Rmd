@@ -1,0 +1,439 @@
+---
+title: "Polygon-to-H3 compaction workflow"
+description: "A reproducible workflow for polygon coverage, H3 compaction, source relationships, attribute aggregation, quality assurance, and cartographic representation."
+vignette: >
+  %\VignetteIndexEntry{Polygon-to-H3 compaction workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output: rmarkdown::html_vignette
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+## Overview
+
+`h3compactR` provides a small workflow for representing polygon geography with
+H3 cells, compacting those cells using established H3 hierarchy operations,
+retaining the relationship between source and compacted cells, aggregating
+attributes explicitly, and validating the result.
+
+The central analytical rule is:
+
+> The source H3 grid remains the authoritative analytical support. Compaction
+> changes its representation; it does not change source-cell membership or
+> invent analytical values.
+
+This vignette uses one authoritative source grid throughout the complete
+workflow.
+
+```{r packages}
+library(h3compactR)
+library(sf)
+
+data(toy_membership_polygons)
+```
+
+## 1. Prepare example polygons
+
+The package example geography contains several polygon forms useful for
+demonstrating assignment and compaction. For this vignette we create generic
+feature identifiers and attributes directly from the example rows.
+
+```{r prepare-polygons}
+polygons <- toy_membership_polygons
+
+polygons$feature_id <- sprintf(
+  "feature_%02d",
+  seq_len(nrow(polygons))
+)
+
+polygons$feature_name <- paste(
+  "Feature",
+  seq_len(nrow(polygons))
+)
+
+polygons$group_name <- rep(
+  c("Group A", "Group B"),
+  length.out = nrow(polygons)
+)
+
+polygons
+```
+
+The identifier used for assignment must uniquely identify polygon features.
+The package validates polygon topology before performing polygon relationship
+or assignment operations.
+
+## 2. Create the authoritative source H3 grid
+
+First create a single polygon footprint from the example features. The H3
+coverage generated from this footprint is the authoritative source support
+used for assignment, compaction, lookup, aggregation, and QA below.
+
+```{r source-coverage}
+polygon_union <- sf::st_union(
+  sf::st_geometry(polygons)
+)
+
+polygon_union <- sf::st_sf(
+  geometry = polygon_union
+)
+
+source_h3 <- h3_cover_polygon(
+  x = polygon_union,
+  resolution = 8L,
+  boundary = "intersects"
+)
+
+length(source_h3)
+```
+
+### Coverage rules
+
+`h3_cover_polygon()` supports four explicit boundary rules:
+
+- `"center"` retains cells whose H3 centre is covered by the polygon;
+- `"within"` retains cells fully contained by the polygon;
+- `"intersects"` retains cells having any geometric intersection with the
+  polygon; and
+- `"overlap"` retains cells meeting a specified proportional overlap
+  threshold.
+
+For overlap coverage, the retained proportion is
+
+\[
+\frac{\operatorname{area}(\mathrm{H3\ cell}\cap\mathrm{polygon})}
+     {\operatorname{area}(\mathrm{H3\ cell})}.
+\]
+
+For example:
+
+```{r overlap-example, eval=FALSE}
+overlap_h3 <- h3_cover_polygon(
+  x = polygon_union,
+  resolution = 8L,
+  boundary = "overlap",
+  min_overlap = 0.5
+)
+```
+
+The choice of boundary rule is an analytical decision. Geometry-based rules
+such as `within`, `intersects`, and `overlap` require more spatial processing
+than standard centre-based coverage.
+
+## 3. Optional neighbourhood expansion
+
+`expand_h3()` adds neighbouring cells at the same H3 resolution. Expansion is
+separate from polygon coverage so that the two operations remain explicit.
+
+```{r expand}
+expanded_h3 <- expand_h3(
+  source_h3,
+  rings = 1L
+)
+
+c(
+  source = length(source_h3),
+  expanded = length(expanded_h3)
+)
+```
+
+The expanded grid is not used in the remaining workflow. The original
+`source_h3` object remains authoritative.
+
+## 4. Assign source cells to polygon features
+
+Assignment is performed on the same source H3 cells created above.
+
+```{r assignment}
+source_assignment <- h3_assign_polygon(
+  x = source_h3,
+  polygons = polygons,
+  id = "feature_id",
+  keep = c("feature_name", "group_name"),
+  outside = "unassigned"
+)
+
+head(source_assignment)
+
+table(
+  source_assignment$assignment_method,
+  useNA = "ifany"
+)
+```
+
+Assignment methods describe how ownership was established. Depending on the
+geometry, these may include centre-based assignment, a unique intersection,
+largest overlap, nearest assignment when requested, ambiguity, or an
+unassigned result.
+
+For this example the authoritative footprint should resolve to one polygon
+owner per source H3 cell.
+
+```{r assignment-check}
+stopifnot(
+  nrow(source_assignment) == length(source_h3),
+  identical(sort(source_assignment$h3), sort(source_h3)),
+  !any(source_assignment$assignment_method %in% c("ambiguous", "unassigned")),
+  !anyNA(source_assignment$polygon_id)
+)
+```
+
+## 5. Compact the source H3 representation
+
+Compaction operates on the authoritative source indexes. `min_resolution`
+defines the coarsest H3 resolution permitted in the compact representation.
+
+```{r compact}
+compacted_h3 <- compact_h3(
+  x = source_h3,
+  min_resolution = 7L
+)
+
+c(
+  source = length(source_h3),
+  compacted = length(compacted_h3)
+)
+```
+
+The result may contain more than one H3 resolution. This is expected:
+compaction replaces complete groups of child cells with their H3 parent where
+the hierarchy permits it.
+
+Compaction should therefore be understood as a hierarchical representation of
+the source grid rather than a new analytical support.
+
+## 6. Build the source-to-compact lookup
+
+`h3_compaction_lookup()` records exactly which compact H3 cell owns each source
+H3 cell.
+
+```{r lookup}
+lookup <- h3_compaction_lookup(
+  source = source_h3,
+  compacted = compacted_h3
+)
+
+head(lookup)
+
+table(lookup$relationship)
+```
+
+Each authoritative source cell must occur exactly once in this relationship.
+
+```{r lookup-check}
+stopifnot(
+  nrow(lookup) == length(source_h3),
+  identical(sort(lookup$source_h3), sort(source_h3))
+)
+```
+
+This lookup is the analytical bridge between the source grid and the compacted
+representation.
+
+## 7. Aggregate attributes safely
+
+Additive measures can be summed through the lookup. Categorical attributes can
+be collapsed to retain provenance.
+
+Here we create a small deterministic additive measure on the source cells.
+
+```{r source-data}
+source_data <- source_assignment
+
+source_data$observations <- rep(
+  c(0, 1, 2, 1),
+  length.out = nrow(source_data)
+)
+
+source_data$source_weight <- seq_len(
+  nrow(source_data)
+)
+
+head(source_data)
+```
+
+Now aggregate using the lookup created from exactly the same authoritative H3
+support.
+
+```{r aggregation}
+compact_data <- aggregate_h3(
+  data = source_data,
+  lookup = lookup,
+  sum = c("observations", "source_weight"),
+  collapse = c(
+    "polygon_id",
+    "feature_name",
+    "group_name"
+  ),
+  h3_col = "h3"
+)
+
+head(compact_data)
+```
+
+`aggregate_h3()` does not infer aggregation semantics. Additive and categorical
+fields are declared explicitly.
+
+Collapsed categorical values record source provenance. They are not new
+analytical categories. Where more than one unique source value contributes to
+a compact owner, the values are retained in deterministic collapsed form and
+the corresponding `*_n` field records the number of unique non-missing source
+values represented.
+
+### Check additive conservation
+
+```{r conservation}
+stopifnot(
+  sum(source_data$observations) ==
+    sum(compact_data$observations),
+  sum(source_data$source_weight) ==
+    sum(compact_data$source_weight)
+)
+
+c(
+  source_observations = sum(source_data$observations),
+  compact_observations = sum(compact_data$observations),
+  source_weight = sum(source_data$source_weight),
+  compact_weight = sum(compact_data$source_weight)
+)
+```
+
+This conservation is fundamental: every authoritative source H3 contributes
+its additive value exactly once to exactly one compact owner.
+
+Derived quantities such as rates, proportions, and percentages should not
+normally be averaged during compaction. Their appropriate numerator and
+denominator components should be aggregated and the derived quantity
+recalculated afterwards.
+
+## 8. Validate the compaction
+
+`qa_h3_compaction()` checks the structural relationship between the source and
+compacted H3 representations.
+
+```{r qa}
+qa <- qa_h3_compaction(
+  source = source_h3,
+  compacted = compacted_h3
+)
+
+qa
+```
+
+The QA process checks round-trip reconstruction, hierarchy consistency,
+source ownership, resolution composition, and the reduction achieved by
+compaction.
+
+## 9. Cartographic inspection
+
+`plot_h3()` provides a lightweight way to inspect H3 geometry against polygon
+context.
+
+```{r plot-source}
+plot_h3(
+  source_h3,
+  context = polygons,
+  main = "Source H3 representation"
+)
+```
+
+```{r plot-compact}
+plot_h3(
+  compacted_h3,
+  context = polygons,
+  main = "Compacted H3 representation"
+)
+```
+
+Visual inspection is useful because a compact H3 parent may extend
+geographically beyond the exact union of its represented source cells. H3
+parent-child hierarchy is logically exact, but polygon geometry across
+resolutions should not be interpreted as exact geographic containment.
+
+For that reason, source membership and analytical values remain attached to
+the authoritative source support and are transferred through the explicit
+lookup rather than inferred from the visible footprint of a compact parent.
+
+## 10. Polygon membership as a separate relationship
+
+`h3_polygon_membership()` can be used when the required result is the
+geometric relationship between H3 cells and polygon features rather than a
+single assigned owner.
+
+```{r membership}
+membership <- h3_polygon_membership(
+  x = source_h3,
+  polygons = polygons,
+  id = "feature_id"
+)
+
+head(membership)
+```
+
+Membership and assignment answer different questions:
+
+- membership records H3-to-polygon relationships;
+- assignment resolves one polygon owner for each H3 cell.
+
+Keeping these operations separate avoids silently converting a geometric
+relationship into an ownership rule.
+
+## 11. Computational scale
+
+Standard centre-based H3 coverage is substantially less computationally
+demanding than geometry-based coverage rules. `within`, `intersects`, and
+`overlap` require additional H3 geometry construction and spatial operations
+and can become computationally expensive for very large areas at fine H3
+resolutions.
+
+There is no universal maximum cell count that is appropriate for every
+workflow. Resolution and boundary rule should be selected according to the
+analytical purpose, and large workflows should be tested on representative
+subsets before scaling.
+
+Performance optimisation for very large geometry-heavy workflows is an area
+for future package development.
+
+## 12. Analytical principles
+
+The workflow demonstrated here follows several deliberate principles:
+
+1. **The source H3 grid is authoritative.** Compaction changes representation,
+   not source support.
+2. **Compaction follows the H3 hierarchy.** It does not create a new H3
+   compaction algorithm.
+3. **Source-to-compact relationships are explicit.** Analytical values are not
+   inferred from compact polygon appearance.
+4. **Aggregation follows variable meaning.** Additive measures are summed;
+   categorical fields may retain provenance; derived measures should be
+   recalculated from appropriate components.
+5. **QA is part of the workflow.** Round-trip reconstruction, ownership,
+   hierarchy, conservation, and cartographic inspection provide complementary
+   checks.
+6. **Spatial relationships and ownership are separate concepts.** Membership
+   does not silently imply assignment.
+
+## Attribution
+
+`h3compactR` builds on the H3 hierarchical geospatial indexing system and the
+H3 operations exposed to R through `h3jsr`. Spatial geometry operations use
+the `sf` ecosystem.
+
+The package does not introduce a new H3 compaction algorithm. Its contribution
+is the reproducible analytical workflow around polygon coverage choices,
+hierarchical compaction, source-to-compact relationships, explicit attribute
+aggregation, provenance, quality assurance, and cartographic representation.
+
+The package's emphasis on making the choice and interpretation of geographic
+units explicit is also informed by the broader cartographic literature on
+geographic units and choropleth mapping, including Boscoe and Pickle (2003).
+
+See the package references for full attribution and source details.

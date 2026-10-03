@@ -50,6 +50,13 @@ source cell cannot be assigned to a compacted cell, if more than one
 compacted cell could own the same source cell, or if the compacted
 representation contains cells finer than the source resolution.
 }
+\examples{
+source <- h3_cover_polygon(toy_polygons[3, ], resolution = 8)
+compacted <- compact_h3(source, min_resolution = 7)
+lookup <- h3_compaction_lookup(source, compacted)
+head(lookup)
+
+}
 \references{
 H3 hierarchy and logical containment: \url{https://h3geo.org/docs/highlights/indexing/}.
 R access is provided through O'Brien's \code{h3jsr} package

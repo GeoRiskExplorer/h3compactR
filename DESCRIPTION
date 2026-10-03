@@ -1,17 +1,24 @@
 Package: h3compactR
 Title: Polygon Coverage, Compaction and Aggregation for H3 Spatial Data
-Version: 0.0.0.9000
+Version: 1.0.0
 Authors@R: person("Rob", "Andronaco",
-    email = "robertandronaco@gmail.com",
-    role = c("aut", "cre"))
+    email = "enquire@georiskanalysis.com",
+    role = c("aut", "cre"),
+    comment = c(
+        "GDipRiskMgt" = "Graduate Diploma in Risk Management",
+        "MA" = "Master of Arts (Sports and Recreation Project Management)",
+        "MGeospatialSc" = "Master of Geospatial Science"
+    ))
 Description:
-    Provides a compact workflow for representing polygons with H3 cells,
+    Provides a reproducible workflow for representing polygons with H3 cells,
     compacting those cells using established H3 methods, maintaining
-    relationships between source and compacted cells, aggregating attributes,
-    and validating the resulting spatial representation. The package builds
-    on the H3 ecosystem and the h3jsr package, with a focus on reproducible
-    spatial analysis and cartographic workflows.
-URL: https://github.com/GeoRiskExplorer/h3compactR
+    relationships between source and compacted cells, explicitly aggregating
+    attributes, and validating the resulting spatial representation. The
+    package builds on the H3 ecosystem and the h3jsr package, with a focus on
+    reproducible spatial analysis, analytical traceability, quality assurance,
+    and cartographic representation.
+URL: https://www.georiskanalysis.com,
+    https://github.com/GeoRiskExplorer/h3compactR
 BugReports: https://github.com/GeoRiskExplorer/h3compactR/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
@@ -24,7 +31,10 @@ Imports:
     h3jsr,
     tibble
 Suggests:
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
+VignetteBuilder: knitr
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.1.0
 LazyData: true
